@@ -87,47 +87,6 @@ _todo: calculate the market shares in the market at the time the data were colle
 
 
 
-## 2. Estimating Minivan Preferences
-
-
-### Data
-
-_todo: download the dataset from here:_ http://goo.gl/5xQObB 
-
-_todo: describe the data a bit. How many respondents took the conjoint survey?  How many choice tasks did each respondent complete?  How many alternatives were presented on each choice task? For each alternative._
-
-The attributes (levels) were number of seats (6,7,8), cargo space (2ft, 3ft), engine type (gas, hybrid, electric), and price (in thousands of dollars).
-
-
-### Model
-
-_todo: estimate a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors.  You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation._  
-
-
-### Results
-
-_todo: Interpret the coefficients. Which features are more preferred?_
-
-_todo: Use the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?_
-
-_todo: assume the market consists of the following 6 minivans. Predict the market shares of each minivan in the market._
-
-| Minivan | Seats | Cargo | Engine | Price |
-|---------|-------|-------|--------|-------|
-| A       | 7     | 2     | Hyb    | 30    |
-| B       | 6     | 2     | Gas    | 30    |
-| C       | 8     | 2     | Gas    | 30    |
-| D       | 7     | 3     | Gas    | 40    |
-| E       | 6     | 2     | Elec   | 40    |
-| F       | 7     | 2     | Hyb    | 35    |
-
-
-_hint: this example is taken from the "R 4 Marketing Research" book by Chapman and Feit. I believe the same example is present in the companion book titled "Python 4 Marketing Research".  I encourage you to attempt these questions on your own, but if you get stuck or would like to compare you results to "the answers," you may consult the Chapman and Feit books._
-
-
-
-
-
 
 
 
