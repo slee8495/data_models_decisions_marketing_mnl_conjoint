@@ -1,0 +1,133 @@
+---
+title: "Poisson Regression Examples"
+author: "Your Name"
+date: today
+callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
+editor_options: 
+  chunk_output_type: console
+---
+
+
+This assignment uses uses the MNL model to analyze (1) yogurt purchase data made by consumers at a retail location, and (2) conjoint data about consumer preferences for minivans.
+
+
+## 1. Estimating Yogurt Preferences
+
+### Likelihood for the Multi-nomial Logit (MNL) Model
+
+Suppose we have $i=1,\ldots,n$ consumers who each select exactly one product $j$ from a set of $J$ products. The outcome variable is the identity of the product chosen $y_i \in \{1, \ldots, J\}$ or equivalently a vector of $J-1$ zeros and $1$ one, where the $1$ indicates the selected product. For example, if the third product was chosen out of 4 products, then either $y=3$ or $y=(0,0,1,0)$ depending on how we want to represent it. Suppose also that we have a vector of data on each product $x_j$ (eg, size, price, etc.). 
+
+We model the consumer's decision as the selection of the product that provides the most utility, and we'll specify the utility function as a linear function of the product characteristics:
+
+$$ U_{ij} = x_j'\beta + \epsilon_{ij} $$
+
+where $\epsilon_{ij}$ is an i.i.d. extreme value error term. 
+
+The choice of the i.i.d. extreme value error term leads to a closed-form expression for the probability that consumer $i$ chooses product $j$:
+
+$$ \mathbb{P}_i(j) = \frac{e^{x_j'\beta}}{\sum_{k=1}^Je^{x_k'\beta}} $$
+
+For example, if there are 4 products, the probability that consumer $i$ chooses product 3 is:
+
+$$ \mathbb{P}_i(3) = \frac{e^{x_3'\beta}}{e^{x_1'\beta} + e^{x_2'\beta} + e^{x_3'\beta} + e^{x_4'\beta}} $$
+
+A clever way to write the individual likelihood function for consumer $i$ is the product of the $J$ probabilities, each raised to the power of an indicator variable ($\delta_{ij}$) that indicates the chosen product:
+
+$$ L_i(\beta) = \prod_{j=1}^J \mathbb{P}_i(j)^{\delta_{ij}} = \mathbb{P}_i(1)^{\delta_{i1}} \times \ldots \times \mathbb{P}_i(J)^{\delta_{iJ}}$$
+
+Notice that if the consumer selected product $j=3$, then $\delta_{i3}=1$ while $\delta_{i1}=\delta_{i2}=\delta_{i4}=0$ and the likelihood is:
+
+$$ L_i(\beta) = \mathbb{P}_i(1)^0 \times \mathbb{P}_i(2)^0 \times \mathbb{P}_i(3)^1 \times \mathbb{P}_i(4)^0 = \mathbb{P}_i(3) = \frac{e^{x_3'\beta}}{\sum_{k=1}^Je^{x_k'\beta}} $$
+
+The joint likelihood (across all consumers) is the product of the $n$ individual likelihoods:
+
+$$ L_n(\beta) = \prod_{i=1}^n L_i(\beta) = \prod_{i=1}^n \prod_{j=1}^J \mathbb{P}_i(j)^{\delta_{ij}} $$
+
+And the joint log-likelihood function is:
+
+$$ \ell_n(\beta) = \sum_{i=1}^n \sum_{j=1}^J \delta_{ij} \log(\mathbb{P}_i(j)) $$
+
+
+### Yogurt Dataset
+
+We will use the `yogurt_data` dataset, which provides anonymized consumer identifiers (`id`), a vector indicating the chosen product (`y1`:`y4`), a vector indicating if any products were "featured" in the store as a form of advertising (`f1`:`f4`), and the products' prices (`p1`:`p4`). For example, consumer 1 purchased yogurt 4 at a price of 0.079/oz and none of the yogurts were featured/advertised at the time of consumer 1's purchase.  Consumers 2 through 7 each bought yogurt 2, etc.
+
+_todo: import the data, maybe show the first few rows, and describe the data a bit._
+
+Let the vector of product features include brand dummy variables for yogurts 1-3 (we'll omit a dummy for product 4 to avoid multi-collinearity), a dummy variable to indicate if a yogurt was featured, and a continuous variable for the yogurts' prices:  
+
+$$ x_j' = [\mathbbm{1}(\text{Yogurt 1}), \mathbbm{1}(\text{Yogurt 2}), \mathbbm{1}(\text{Yogurt 3}), X_f, X_p] $$
+
+The "hard part" of the MNL likelihood function is organizing the data, as we need to keep track of 3 dimensions (consumer $i$, covariate $k$, and product $j$) instead of the typical 2 dimensions for cross-sectional regression models (consumer $i$ and covariate $k$). 
+
+What we would like to do is reorganize the data from a "wide" shape with $n$ rows and multiple columns for each covariate, to a "long" shape with $n \times J$ rows and a single column for each covariate.  As part of this re-organization, we'll add binary variables to indicate the first 3 products; the variables for featured and price are included in the dataset and simply need to be "pivoted" or "melted" from wide to long.  
+
+_todo: reshape and prep the data_
+
+
+### Estimation
+
+_todo: Code up the log-likelihood function._
+
+_todo: Use `optim()` in R or `optimize()` in Python to find the MLEs for the 5 parameters ($\beta_1, \beta_2, \beta_3, \beta_f, \beta_p$).  (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)_
+
+
+### Discussion
+
+We learn...
+
+_todo: interpret the 3 product intercepts (which yogurt is most preferred?)._
+
+_todo: use the estimated price coefficient as a dollar-per-util conversion factor. Use this conversion factor to calculate the dollar benefit between the most-preferred yogurt (the one with the highest intercept) and the least preferred yogurt (the one with the lowest intercept). This is a per-unit monetary measure of brand value._
+
+One benefit of the MNL model is that we can simulate counterfactuals (eg, what if the price of yogurt 1 was $0.10/oz instead of $0.08/oz).
+
+_todo: calculate the market shares in the market at the time the data were collected.  Then, increase the price of yogurt 1 by $0.10 and use your fitted model to predict p(y|x) for each consumer and each product (this should be a matrix of $N \times 4$ estimated choice probabilities.  Take the column averages to get the new, expected market shares that result from the $0.10 price increase to yogurt 1.  Do the yogurt 1 market shares decrease?_
+
+
+
+
+## 2. Estimating Minivan Preferences
+
+
+### Data
+
+_todo: download the dataset from here:_ http://goo.gl/5xQObB 
+
+_todo: describe the data a bit. How many respondents took the conjoint survey?  How many choice tasks did each respondent complete?  How many alternatives were presented on each choice task? For each alternative._
+
+The attributes (levels) were number of seats (6,7,8), cargo space (2ft, 3ft), engine type (gas, hybrid, electric), and price (in thousands of dollars).
+
+
+### Model
+
+_todo: estimate a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors.  You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation._  
+
+
+### Results
+
+_todo: Interpret the coefficients. Which features are more preferred?_
+
+_todo: Use the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?_
+
+_todo: assume the market consists of the following 6 minivans. Predict the market shares of each minivan in the market._
+
+| Minivan | Seats | Cargo | Engine | Price |
+|---------|-------|-------|--------|-------|
+| A       | 7     | 2     | Hyb    | 30    |
+| B       | 6     | 2     | Gas    | 30    |
+| C       | 8     | 2     | Gas    | 30    |
+| D       | 7     | 3     | Gas    | 40    |
+| E       | 6     | 2     | Elec   | 40    |
+| F       | 7     | 2     | Hyb    | 35    |
+
+
+_hint: this example is taken from the "R 4 Marketing Research" book by Chapman and Feit. I believe the same example is present in the companion book titled "Python 4 Marketing Research".  I encourage you to attempt these questions on your own, but if you get stuck or would like to compare you results to "the answers," you may consult the Chapman and Feit books._
+
+
+
+
+
+
+
+
