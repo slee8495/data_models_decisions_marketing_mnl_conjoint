@@ -370,9 +370,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Price Sensitivity: The p columns are crucial for analyzing how price changes impact consumer choice, which is fundamental for modeling utility in the MNL model.</li>
 </ul>
 <p><br><br></p>
+</section>
+</section>
+</section>
+<section id="eda" class="level1">
+<h1>EDA</h1>
+<p><br><br></p>
 <p>Let the vector of product features include brand dummy variables for yogurts 1-3 (we’ll omit a dummy for product 4 to avoid multi-collinearity), a dummy variable to indicate if a yogurt was featured, and a continuous variable for the yogurts’ prices:</p>
 <p><span class="math display">\[ x'_j = \left[ \mathbb{1}(\text{Yogurt 1}), \mathbb{1}(\text{Yogurt 2}), \mathbb{1}(\text{Yogurt 3}), X_f, X_p \right] \]</span></p>
-</section>
 <section id="the-hard-part-of-the-mnl-likelihood-function-is-organizing-the-data-as-we-need-to-keep-track-of-3-dimensions-consumer-i-covariate-k-and-product-j-instead-of-the-typical-2-dimensions-for-cross-sectional-regression-models-consumer-i-and-covariate-k." class="level4">
 <h4 class="anchored" data-anchor-id="the-hard-part-of-the-mnl-likelihood-function-is-organizing-the-data-as-we-need-to-keep-track-of-3-dimensions-consumer-i-covariate-k-and-product-j-instead-of-the-typical-2-dimensions-for-cross-sectional-regression-models-consumer-i-and-covariate-k.">The “hard part” of the MNL likelihood function is organizing the data, as we need to keep track of 3 dimensions (consumer <span class="math inline">\(i\)</span>, covariate <span class="math inline">\(k\)</span>, and product <span class="math inline">\(j\)</span>) instead of the typical 2 dimensions for cross-sectional regression models (consumer <span class="math inline">\(i\)</span> and covariate <span class="math inline">\(k\)</span>).</h4>
 </section>
@@ -857,7 +862,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This code will ensure the dataset is structured correctly for your MNL model analysis, adhering strictly to the specified requirements.</p>
 <p><br><br></p>
 </section>
-</section>
 <section id="estimation" class="level3">
 <h3 class="anchored" data-anchor-id="estimation">Estimation</h3>
 <section id="i-will-now-code-the-log-likelihood-function-which-is-crucial-for-estimating-the-parameters-of-the-model.-this-function-will-be-used-to-quantify-the-fit-of-the-model-to-the-observed-data-facilitating-the-optimization-process." class="level4">
@@ -912,7 +916,6 @@ converged</code></pre>
 </div>
 </div>
 <p><br></p>
-</section>
 </section>
 </section>
 <section id="discussion" class="level2">
@@ -1188,6 +1191,7 @@ AIC: 9303.763 </code></pre>
 <li>Regularly performing market simulations can help predict consumer behavior in response to pricing and other strategic changes. This can provide valuable insights for decision-making and maintaining competitive advantage.</li>
 <li>By leveraging advanced analytical techniques like Multinomial Logistic Regression and market simulations, businesses can better understand consumer preferences and optimize their pricing strategies to maximize market share and profitability.</li>
 </ul>
+</section>
 </section>
 </section>
 
