@@ -1,7 +1,7 @@
 ---
 title: "Poisson Regression Examples"
-author: "Your Name"
-date: today
+author: "Sangho Lee"
+date: 5/13/2024
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
 editor_options: 
   chunk_output_type: console
