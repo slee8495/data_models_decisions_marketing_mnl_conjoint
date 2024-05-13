@@ -370,6 +370,101 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Price Sensitivity: The p columns are crucial for analyzing how price changes impact consumer choice, which is fundamental for modeling utility in the MNL model.</li>
 </ul>
 <p><br><br></p>
+</section>
+<section id="i-will-perform-exploratory-data-analysis-eda-to-understand-the-format-and-characteristics-of-the-dataset.-this-involves-examining-the-structure-summary-statistics-distributions-and-relationships-within-the-data-allowing-us-to-identify-any-patterns-anomalies-or-potential-issues-that-may-inform-subsequent-analyses." class="level4">
+<h4 class="anchored" data-anchor-id="i-will-perform-exploratory-data-analysis-eda-to-understand-the-format-and-characteristics-of-the-dataset.-this-involves-examining-the-structure-summary-statistics-distributions-and-relationships-within-the-data-allowing-us-to-identify-any-patterns-anomalies-or-potential-issues-that-may-inform-subsequent-analyses.">I will perform exploratory data analysis (EDA) to understand the format and characteristics of the dataset. This involves examining the structure, summary statistics, distributions, and relationships within the data, allowing us to identify any patterns, anomalies, or potential issues that may inform subsequent analyses.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(yogurt_data.info())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 2430 entries, 0 to 2429
+Data columns (total 13 columns):
+ #   Column  Non-Null Count  Dtype  
+---  ------  --------------  -----  
+ 0   id      2430 non-null   int64  
+ 1   y1      2430 non-null   int64  
+ 2   y2      2430 non-null   int64  
+ 3   y3      2430 non-null   int64  
+ 4   y4      2430 non-null   int64  
+ 5   f1      2430 non-null   int64  
+ 6   f2      2430 non-null   int64  
+ 7   f3      2430 non-null   int64  
+ 8   f4      2430 non-null   int64  
+ 9   p1      2430 non-null   float64
+ 10  p2      2430 non-null   float64
+ 11  p3      2430 non-null   float64
+ 12  p4      2430 non-null   float64
+dtypes: float64(4), int64(9)
+memory usage: 246.9 KB
+None</code></pre>
+</div>
+</div>
+</section>
+<section id="dataset-overview" class="level4">
+<h4 class="anchored" data-anchor-id="dataset-overview">Dataset Overview</h4>
+<ul>
+<li>The dataset contains 2430 observations across 13 columns.</li>
+<li>There are no missing values in any of the columns, indicating a clean and complete dataset ready for analysis.</li>
+</ul>
+<p><br></p>
+</section>
+<section id="bivariate-analysis-price-vs-choice" class="level4">
+<h4 class="anchored" data-anchor-id="bivariate-analysis-price-vs-choice">Bivariate Analysis: Price vs Choice</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Melt the data to have a long format for easier plotting</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>melted_yogurt_data <span class="op">=</span> pd.melt(yogurt_data, id_vars<span class="op">=</span>[<span class="st">'id'</span>], value_vars<span class="op">=</span>[<span class="st">'y1'</span>, <span class="st">'y2'</span>, <span class="st">'y3'</span>, <span class="st">'y4'</span>], </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                             var_name<span class="op">=</span><span class="st">'choice'</span>, value_name<span class="op">=</span><span class="st">'chosen'</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter only the chosen cases</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>chosen_data <span class="op">=</span> melted_yogurt_data[melted_yogurt_data[<span class="st">'chosen'</span>] <span class="op">==</span> <span class="dv">1</span>]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the price columns with the chosen_data</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>chosen_data <span class="op">=</span> chosen_data.merge(yogurt_data[[<span class="st">'id'</span>, <span class="st">'p1'</span>, <span class="st">'p2'</span>, <span class="st">'p3'</span>, <span class="st">'p4'</span>]], on<span class="op">=</span><span class="st">'id'</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new column for the corresponding price</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_price(row):</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row[<span class="st">'choice'</span>] <span class="op">==</span> <span class="st">'y1'</span>:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> row[<span class="st">'p1'</span>]</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> row[<span class="st">'choice'</span>] <span class="op">==</span> <span class="st">'y2'</span>:</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> row[<span class="st">'p2'</span>]</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> row[<span class="st">'choice'</span>] <span class="op">==</span> <span class="st">'y3'</span>:</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> row[<span class="st">'p3'</span>]</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> row[<span class="st">'choice'</span>] <span class="op">==</span> <span class="st">'y4'</span>:</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> row[<span class="st">'p4'</span>]</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>chosen_data[<span class="st">'price'</span>] <span class="op">=</span> chosen_data.<span class="bu">apply</span>(get_price, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot for price vs choice</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>sns.boxplot(x<span class="op">=</span><span class="st">'choice'</span>, y<span class="op">=</span><span class="st">'price'</span>, data<span class="op">=</span>chosen_data)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Price Distribution for Each Chosen Yogurt Type'</span>)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Yogurt Type'</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Price'</span>)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw3_questions_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="interpretation" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation">Interpretation:</h4>
+<ul>
+<li><p>Yogurt 1 (y1): This yogurt shows a wide range of prices, with the majority concentrated around the higher end, as indicated by the dense cluster of outliers at the lower price range. The median price is just below $0.10 per oz. The box extends from around $0.05 to over $0.10, indicating a broad spread in prices for this choice.</p></li>
+<li><p>Yogurt 2 (y2): The price distribution for Yogurt 2 is relatively compact compared to Yogurt 1, suggesting less variability in its pricing. The median price is close to $0.09 per oz. The box is narrow, centered around this median, with fewer outliers, which indicates more consistent pricing for this yogurt.</p></li>
+<li><p>Yogurt 3 (y3): Yogurt 3 shows a median price roughly at $0.06 per oz. The box is moderately wide, showing some variation in price but less so than Yogurt 1. There are a few outliers on the higher side, but overall, the distribution suggests moderate price consistency.</p></li>
+<li><p>Yogurt 4 (y4): Similar to Yogurt 3, the price distribution for Yogurt 4 is centered around $0.08 per oz, with a relatively narrow box indicating consistent pricing. This choice exhibits fewer outliers, suggesting that the prices for Yogurt 4 are quite stable.</p></li>
+</ul>
+</section>
+<section id="future-simulation-plans-given-the-insights-from-the-current-price-distribution-analysis-of-the-different-yogurt-types-a-logical-next-step-is-to-simulate-how-changes-in-pricing-could-potentially-affect-consumer-choices.-this-simulation-would-provide-valuable-insights-into-the-price-elasticity-of-each-yogurt-type-and-help-optimize-pricing-strategies." class="level4">
+<h4 class="anchored" data-anchor-id="future-simulation-plans-given-the-insights-from-the-current-price-distribution-analysis-of-the-different-yogurt-types-a-logical-next-step-is-to-simulate-how-changes-in-pricing-could-potentially-affect-consumer-choices.-this-simulation-would-provide-valuable-insights-into-the-price-elasticity-of-each-yogurt-type-and-help-optimize-pricing-strategies.">Future Simulation Plans: Given the insights from the current price distribution analysis of the different yogurt types, a logical next step is to simulate how changes in pricing could potentially affect consumer choices. This simulation would provide valuable insights into the price elasticity of each yogurt type and help optimize pricing strategies.</h4>
+</section>
+<section id="price-increase-simulation-initially-focus-on-simulating-the-effects-of-a-moderate-price-increase-particularly-for-yogurt-1-which-exhibits-the-highest-price-variability.-the-aim-would-be-to-determine-if-a-higher-price-could-be-sustained-without-significant-loss-of-market-share-given-its-apparent-premium-positioning." class="level4">
+<h4 class="anchored" data-anchor-id="price-increase-simulation-initially-focus-on-simulating-the-effects-of-a-moderate-price-increase-particularly-for-yogurt-1-which-exhibits-the-highest-price-variability.-the-aim-would-be-to-determine-if-a-higher-price-could-be-sustained-without-significant-loss-of-market-share-given-its-apparent-premium-positioning.">Price Increase Simulation: Initially focus on simulating the effects of a moderate price increase, particularly for Yogurt 1, which exhibits the highest price variability. The aim would be to determine if a higher price could be sustained without significant loss of market share, given its apparent premium positioning.</h4>
+<p><br><br></p>
 <p>Let the vector of product features include brand dummy variables for yogurts 1-3 (we’ll omit a dummy for product 4 to avoid multi-collinearity), a dummy variable to indicate if a yogurt was featured, and a continuous variable for the yogurts’ prices:</p>
 <p><span class="math display">\[ x'_j = \left[ \mathbb{1}(\text{Yogurt 1}), \mathbb{1}(\text{Yogurt 2}), \mathbb{1}(\text{Yogurt 3}), X_f, X_p \right] \]</span></p>
 </section>
@@ -379,17 +474,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="what-we-would-like-to-do-is-reorganize-the-data-from-a-wide-shape-with-n-rows-and-multiple-columns-for-each-covariate-to-a-long-shape-with-n-times-j-rows-and-a-single-column-for-each-covariate.-as-part-of-this-re-organization-well-add-binary-variables-to-indicate-the-first-3-products-the-variables-for-featured-and-price-are-included-in-the-dataset-and-simply-need-to-be-pivoted-or-melted-from-wide-to-long." class="level4">
 <h4 class="anchored" data-anchor-id="what-we-would-like-to-do-is-reorganize-the-data-from-a-wide-shape-with-n-rows-and-multiple-columns-for-each-covariate-to-a-long-shape-with-n-times-j-rows-and-a-single-column-for-each-covariate.-as-part-of-this-re-organization-well-add-binary-variables-to-indicate-the-first-3-products-the-variables-for-featured-and-price-are-included-in-the-dataset-and-simply-need-to-be-pivoted-or-melted-from-wide-to-long.">What we would like to do is reorganize the data from a “wide” shape with <span class="math inline">\(n\)</span> rows and multiple columns for each covariate, to a “long” shape with <span class="math inline">\(n \times J\)</span> rows and a single column for each covariate. As part of this re-organization, we’ll add binary variables to indicate the first 3 products; the variables for featured and price are included in the dataset and simply need to be “pivoted” or “melted” from wide to long.</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshape the choice data from wide to long format</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>choice_long <span class="ot">&lt;-</span> yogurt_data <span class="sc">%&gt;%</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"y"</span>),</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_to =</span> <span class="st">"product"</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_prefix =</span> <span class="st">"y"</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">values_to =</span> <span class="st">"choice"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">product =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"y"</span>, <span class="st">""</span>, product)))</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>choice_long <span class="sc">%&gt;%</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshape the choice data from wide to long format</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>choice_long <span class="ot">&lt;-</span> yogurt_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"y"</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_to =</span> <span class="st">"product"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_prefix =</span> <span class="st">"y"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">values_to =</span> <span class="st">"choice"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">product =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"y"</span>, <span class="st">""</span>, product)))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>choice_long <span class="sc">%&gt;%</span> </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <thead>
@@ -543,17 +638,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshape the featured data from wide to long format</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>featured_long <span class="ot">&lt;-</span> yogurt_data <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"f"</span>),</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_to =</span> <span class="st">"product"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_prefix =</span> <span class="st">"f"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">values_to =</span> <span class="st">"featured"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">product =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"f"</span>, <span class="st">""</span>, product)))</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>choice_long <span class="sc">%&gt;%</span> </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshape the featured data from wide to long format</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>featured_long <span class="ot">&lt;-</span> yogurt_data <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"f"</span>),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_to =</span> <span class="st">"product"</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_prefix =</span> <span class="st">"f"</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">values_to =</span> <span class="st">"featured"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">product =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"f"</span>, <span class="st">""</span>, product)))</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>choice_long <span class="sc">%&gt;%</span> </span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <thead>
@@ -707,34 +802,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshape the price data from wide to long format</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>price_long <span class="ot">&lt;-</span> yogurt_data <span class="sc">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"p"</span>),</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_to =</span> <span class="st">"product"</span>,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_prefix =</span> <span class="st">"p"</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">values_to =</span> <span class="st">"price"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">product =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"p"</span>, <span class="st">""</span>, product)))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Join the reshaped dataframes by id and product</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="ot">&lt;-</span> choice_long <span class="sc">%&gt;%</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">left_join</span>(featured_long, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span>, <span class="st">"product"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">left_join</span>(price_long, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span>, <span class="st">"product"</span>))</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Create dummy variables for brands</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="ot">&lt;-</span> yogurt_long <span class="sc">%&gt;%</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">is_brand1 =</span> <span class="fu">as.integer</span>(product <span class="sc">==</span> <span class="dv">1</span>),</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">is_brand2 =</span> <span class="fu">as.integer</span>(product <span class="sc">==</span> <span class="dv">2</span>),</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">is_brand3 =</span> <span class="fu">as.integer</span>(product <span class="sc">==</span> <span class="dv">3</span>))</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Select and arrange the columns appropriately</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="ot">&lt;-</span> yogurt_long <span class="sc">%&gt;%</span> </span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(id, product, choice, featured, price, is_brand1, is_brand2, is_brand3)</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co"># View the reorganized data</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="sc">%&gt;%</span> </span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reshape the price data from wide to long format</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>price_long <span class="ot">&lt;-</span> yogurt_data <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"p"</span>),</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_to =</span> <span class="st">"product"</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">names_prefix =</span> <span class="st">"p"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">values_to =</span> <span class="st">"price"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">product =</span> <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"p"</span>, <span class="st">""</span>, product)))</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Join the reshaped dataframes by id and product</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="ot">&lt;-</span> choice_long <span class="sc">%&gt;%</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">left_join</span>(featured_long, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span>, <span class="st">"product"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">left_join</span>(price_long, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span>, <span class="st">"product"</span>))</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Create dummy variables for brands</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="ot">&lt;-</span> yogurt_long <span class="sc">%&gt;%</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">is_brand1 =</span> <span class="fu">as.integer</span>(product <span class="sc">==</span> <span class="dv">1</span>),</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">is_brand2 =</span> <span class="fu">as.integer</span>(product <span class="sc">==</span> <span class="dv">2</span>),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">is_brand3 =</span> <span class="fu">as.integer</span>(product <span class="sc">==</span> <span class="dv">3</span>))</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Select and arrange the columns appropriately</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="ot">&lt;-</span> yogurt_long <span class="sc">%&gt;%</span> </span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(id, product, choice, featured, price, is_brand1, is_brand2, is_brand3)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co"># View the reorganized data</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>yogurt_long <span class="sc">%&gt;%</span> </span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <thead>
@@ -866,22 +961,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="next-theni-will-utilize-the-optim-function-in-r-or-the-optimize-function-in-python-to-determine-the-maximum-likelihood-estimates-mles-for-the-five-parameters-beta_1-beta_2-beta_3-beta_f-beta_p.-the-expected-results-include-two-positive-and-one-negative-product-intercepts-a-small-positive-coefficient-for-the-featured-variable-and-a-large-negative-coefficient-for-the-price-variable." class="level4">
 <h4 class="anchored" data-anchor-id="next-theni-will-utilize-the-optim-function-in-r-or-the-optimize-function-in-python-to-determine-the-maximum-likelihood-estimates-mles-for-the-five-parameters-beta_1-beta_2-beta_3-beta_f-beta_p.-the-expected-results-include-two-positive-and-one-negative-product-intercepts-a-small-positive-coefficient-for-the-featured-variable-and-a-large-negative-coefficient-for-the-price-variable.">Next then,I will utilize the optim() function in R or the optimize() function in Python to determine the Maximum Likelihood Estimates (MLEs) for the five parameters (<span class="math inline">\(\beta_1, \beta_2, \beta_3, \beta_f, \beta_p\)</span>). The expected results include two positive and one negative product intercepts, a small positive coefficient for the ‘featured’ variable, and a large negative coefficient for the ‘price’ variable.</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>log_likelihood_mnl <span class="ot">&lt;-</span> <span class="cf">function</span>(beta, data) {</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(data[, <span class="fu">c</span>(<span class="st">"is_brand1"</span>, <span class="st">"is_brand2"</span>, <span class="st">"is_brand3"</span>, <span class="st">"featured"</span>, <span class="st">"price"</span>)])</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  utility <span class="ot">&lt;-</span> X <span class="sc">%*%</span> beta</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  exp_utility <span class="ot">&lt;-</span> <span class="fu">exp</span>(utility)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  sum_exp_utility <span class="ot">&lt;-</span> <span class="fu">ave</span>(exp_utility, data<span class="sc">$</span>id, <span class="at">FUN =</span> sum)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  probabilities <span class="ot">&lt;-</span> exp_utility <span class="sc">/</span> sum_exp_utility</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate log-likelihood</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  log_likelihood <span class="ot">&lt;-</span> <span class="fu">sum</span>(data<span class="sc">$</span>choice <span class="sc">*</span> <span class="fu">log</span>(probabilities <span class="sc">+</span> <span class="fl">1e-10</span>)) </span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="sc">-</span>log_likelihood)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>beta_initial <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fl">0.1</span>, <span class="dv">5</span>)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimization to find the best beta values (MLE)</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>opt_result <span class="ot">&lt;-</span> <span class="fu">optim</span>(<span class="at">par =</span> beta_initial, <span class="at">fn =</span> log_likelihood_mnl, <span class="at">data =</span> yogurt_long, <span class="at">method =</span> <span class="st">"BFGS"</span>, <span class="at">control =</span> <span class="fu">list</span>(<span class="at">trace =</span> <span class="dv">1</span>, <span class="at">REPORT =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>log_likelihood_mnl <span class="ot">&lt;-</span> <span class="cf">function</span>(beta, data) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(data[, <span class="fu">c</span>(<span class="st">"is_brand1"</span>, <span class="st">"is_brand2"</span>, <span class="st">"is_brand3"</span>, <span class="st">"featured"</span>, <span class="st">"price"</span>)])</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  utility <span class="ot">&lt;-</span> X <span class="sc">%*%</span> beta</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  exp_utility <span class="ot">&lt;-</span> <span class="fu">exp</span>(utility)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  sum_exp_utility <span class="ot">&lt;-</span> <span class="fu">ave</span>(exp_utility, data<span class="sc">$</span>id, <span class="at">FUN =</span> sum)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  probabilities <span class="ot">&lt;-</span> exp_utility <span class="sc">/</span> sum_exp_utility</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate log-likelihood</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  log_likelihood <span class="ot">&lt;-</span> <span class="fu">sum</span>(data<span class="sc">$</span>choice <span class="sc">*</span> <span class="fu">log</span>(probabilities <span class="sc">+</span> <span class="fl">1e-10</span>)) </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="sc">-</span>log_likelihood)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>beta_initial <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fl">0.1</span>, <span class="dv">5</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimization to find the best beta values (MLE)</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>opt_result <span class="ot">&lt;-</span> <span class="fu">optim</span>(<span class="at">par =</span> beta_initial, <span class="at">fn =</span> log_likelihood_mnl, <span class="at">data =</span> yogurt_long, <span class="at">method =</span> <span class="st">"BFGS"</span>, <span class="at">control =</span> <span class="fu">list</span>(<span class="at">trace =</span> <span class="dv">1</span>, <span class="at">REPORT =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>initial  value 3357.634432 
 iter   2 value 2919.519024
@@ -901,12 +996,12 @@ iter  13 value 2658.558142
 final  value 2658.558142 
 converged</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the results</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(opt_result<span class="sc">$</span>par)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the results</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(opt_result<span class="sc">$</span>par)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]   1.3914204   0.6436796  -3.0902270   0.4860207 -37.1865574</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(opt_result<span class="sc">$</span>value)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(opt_result<span class="sc">$</span>value)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2658.558</code></pre>
 </div>
@@ -928,8 +1023,8 @@ converged</code></pre>
 <li>β3 (Yogurt 3): -3.0902270</li>
 </ul>
 </section>
-<section id="interpretation" class="level3">
-<h3 class="anchored" data-anchor-id="interpretation">Interpretation:</h3>
+<section id="interpretation-1" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-1">Interpretation:</h3>
 <ul>
 <li>The intercepts represent the baseline utility of each yogurt product when other factors (like being featured or price) are held constant. Higher intercepts indicate higher baseline preferences for the corresponding yogurt.</li>
 </ul>
@@ -984,8 +1079,8 @@ converged</code></pre>
 <section id="fit-a-multinomial-logistic-regression-model" class="level5">
 <h5 class="anchored" data-anchor-id="fit-a-multinomial-logistic-regression-model">1. Fit a multinomial logistic regression model</h5>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mnl_model <span class="ot">&lt;-</span> <span class="fu">multinom</span>(choice <span class="sc">~</span> price <span class="sc">+</span> featured <span class="sc">+</span> is_brand1 <span class="sc">+</span> is_brand2 <span class="sc">+</span> is_brand3,</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> yogurt_long)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mnl_model <span class="ot">&lt;-</span> <span class="fu">multinom</span>(choice <span class="sc">~</span> price <span class="sc">+</span> featured <span class="sc">+</span> is_brand1 <span class="sc">+</span> is_brand2 <span class="sc">+</span> is_brand3,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> yogurt_long)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># weights:  7 (6 variable)
 initial  value 6737.390595 
@@ -993,7 +1088,7 @@ iter  10 value 4645.900837
 final  value 4645.881290 
 converged</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mnl_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mnl_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Call:
 multinom(formula = choice ~ price + featured + is_brand1 + is_brand2 + 
@@ -1011,18 +1106,18 @@ is_brand3    -3.1409240 0.14229974
 Residual Deviance: 9291.763 
 AIC: 9303.763 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coefficients and Standard Errors</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>coefficients <span class="ot">&lt;-</span> <span class="fu">summary</span>(mnl_model)<span class="sc">$</span>coefficients</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>standard_errors <span class="ot">&lt;-</span> <span class="fu">summary</span>(mnl_model)<span class="sc">$</span>standard.errors</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate z-values</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>z_values <span class="ot">&lt;-</span> coefficients <span class="sc">/</span> standard_errors</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Get two-tailed p-values from the z-values</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>p_values <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(z_values)))</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the p-values</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>p_values</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coefficients and Standard Errors</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>coefficients <span class="ot">&lt;-</span> <span class="fu">summary</span>(mnl_model)<span class="sc">$</span>coefficients</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>standard_errors <span class="ot">&lt;-</span> <span class="fu">summary</span>(mnl_model)<span class="sc">$</span>standard.errors</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate z-values</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>z_values <span class="ot">&lt;-</span> coefficients <span class="sc">/</span> standard_errors</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Get two-tailed p-values from the z-values</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>p_values <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(z_values)))</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the p-values</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>p_values</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> (Intercept)        price     featured    is_brand1    is_brand2    is_brand3 
 1.152411e-13 0.000000e+00 7.589362e-05 0.000000e+00 0.000000e+00 0.000000e+00 </code></pre>
@@ -1058,44 +1153,44 @@ AIC: 9303.763 </code></pre>
 <li>All variables in the model show p-values significantly smaller than 0.05, indicating that they are statistically significant predictors of choice.</li>
 </ul>
 </section>
-<section id="interpretation-1" class="level5">
-<h5 class="anchored" data-anchor-id="interpretation-1">Interpretation:</h5>
+<section id="interpretation-2" class="level5">
+<h5 class="anchored" data-anchor-id="interpretation-2">Interpretation:</h5>
 <p>Given the statistical significance of all coefficients and assuming that the residuals analysis, diagnostics, and validation of model assumptions hold up to scrutiny (which are steps not shown here), this model appears to be robust for the data at hand. The sign and size of the coefficients suggest practical implications on how price and brand presence influence choice probabilities.</p>
 </section>
 </section>
 <section id="calculate-market-shares-with-original-data" class="level4">
 <h4 class="anchored" data-anchor-id="calculate-market-shares-with-original-data">2. Calculate Market Shares with Original Data:</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to predict choice probabilities and ensure matrix output</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>predict_probs <span class="ot">&lt;-</span> <span class="cf">function</span>(model, data) {</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get probabilities from the model prediction</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  probs <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, data, <span class="at">type =</span> <span class="st">"probs"</span>)</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Ensure probs is a matrix (necessary if the output isn't already in this format)</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.vector</span>(probs)) {</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assuming there are 4 choice categories (adjust if different)</span></span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    probs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(probs, <span class="at">nrow =</span> <span class="fu">length</span>(probs)<span class="sc">/</span><span class="dv">4</span>, <span class="at">ncol =</span> <span class="dv">4</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(probs)</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the predicted probabilities with original data</span></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>predicted_probs_original <span class="ot">&lt;-</span> <span class="fu">predict_probs</span>(mnl_model, yogurt_long)</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Check structure again</span></span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(predicted_probs_original)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to predict choice probabilities and ensure matrix output</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>predict_probs <span class="ot">&lt;-</span> <span class="cf">function</span>(model, data) {</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get probabilities from the model prediction</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  probs <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, data, <span class="at">type =</span> <span class="st">"probs"</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Ensure probs is a matrix (necessary if the output isn't already in this format)</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.vector</span>(probs)) {</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assuming there are 4 choice categories (adjust if different)</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    probs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(probs, <span class="at">nrow =</span> <span class="fu">length</span>(probs)<span class="sc">/</span><span class="dv">4</span>, <span class="at">ncol =</span> <span class="dv">4</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(probs)</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the predicted probabilities with original data</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>predicted_probs_original <span class="ot">&lt;-</span> <span class="fu">predict_probs</span>(mnl_model, yogurt_long)</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Check structure again</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(predicted_probs_original)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> num [1:2430, 1:4] 0.32 0.32 0.32 0.32 0.215 ...</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the original market shares by taking column means of the predicted probabilities</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">is.matrix</span>(predicted_probs_original)) {</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  original_shares <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(predicted_probs_original)</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"Original Market Shares:"</span>)</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(original_shares)</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">"predicted_probs_original is not a matrix."</span>)</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the original market shares by taking column means of the predicted probabilities</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">is.matrix</span>(predicted_probs_original)) {</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  original_shares <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(predicted_probs_original)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"Original Market Shares:"</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(original_shares)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">"predicted_probs_original is not a matrix."</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Original Market Shares:"
 [1] 0.3419756 0.4012303 0.0292095 0.2275624</code></pre>
@@ -1114,16 +1209,16 @@ AIC: 9303.763 </code></pre>
 <section id="simulate-a-price-increase-for-yogurt-1" class="level4">
 <h4 class="anchored" data-anchor-id="simulate-a-price-increase-for-yogurt-1">3. Simulate a Price Increase for Yogurt 1:</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate the price increase by $0.10 for yogurt 1</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>yogurt_long_simulated <span class="ot">&lt;-</span> yogurt_long</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>yogurt_long_simulated<span class="sc">$</span>price[yogurt_long_simulated<span class="sc">$</span>is_brand1 <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> yogurt_long_simulated<span class="sc">$</span>price[yogurt_long_simulated<span class="sc">$</span>is_brand1 <span class="sc">==</span> <span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.10</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the predicted probabilities with the simulated data</span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>predicted_probs_new <span class="ot">&lt;-</span> <span class="fu">predict_probs</span>(mnl_model, yogurt_long_simulated)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>new_shares <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(predicted_probs_new)</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(new_shares)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate the price increase by $0.10 for yogurt 1</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>yogurt_long_simulated <span class="ot">&lt;-</span> yogurt_long</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>yogurt_long_simulated<span class="sc">$</span>price[yogurt_long_simulated<span class="sc">$</span>is_brand1 <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> yogurt_long_simulated<span class="sc">$</span>price[yogurt_long_simulated<span class="sc">$</span>is_brand1 <span class="sc">==</span> <span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.10</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the predicted probabilities with the simulated data</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>predicted_probs_new <span class="ot">&lt;-</span> <span class="fu">predict_probs</span>(mnl_model, yogurt_long_simulated)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>new_shares <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(predicted_probs_new)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(new_shares)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.02856808 0.40123032 0.02920950 0.22756241</code></pre>
 </div>

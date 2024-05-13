@@ -111,6 +111,73 @@ yogurt_data %>%
 <br><br>
 
 
+#### I will perform exploratory data analysis (EDA) to understand the format and characteristics of the dataset. This involves examining the structure, summary statistics, distributions, and relationships within the data, allowing us to identify any patterns, anomalies, or potential issues that may inform subsequent analyses.
+
+
+```{python}
+print(yogurt_data.info())
+
+```
+
+#### Dataset Overview
+- The dataset contains 2430 observations across 13 columns.
+- There are no missing values in any of the columns, indicating a clean and complete dataset ready for analysis.
+
+<br>
+
+#### Bivariate Analysis: Price vs Choice
+
+```{python}
+# Melt the data to have a long format for easier plotting
+melted_yogurt_data = pd.melt(yogurt_data, id_vars=['id'], value_vars=['y1', 'y2', 'y3', 'y4'], 
+                             var_name='choice', value_name='chosen')
+
+# Filter only the chosen cases
+chosen_data = melted_yogurt_data[melted_yogurt_data['chosen'] == 1]
+
+# Merge the price columns with the chosen_data
+chosen_data = chosen_data.merge(yogurt_data[['id', 'p1', 'p2', 'p3', 'p4']], on='id')
+
+# Create a new column for the corresponding price
+def get_price(row):
+    if row['choice'] == 'y1':
+        return row['p1']
+    elif row['choice'] == 'y2':
+        return row['p2']
+    elif row['choice'] == 'y3':
+        return row['p3']
+    elif row['choice'] == 'y4':
+        return row['p4']
+
+chosen_data['price'] = chosen_data.apply(get_price, axis=1)
+
+# Boxplot for price vs choice
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='choice', y='price', data=chosen_data)
+plt.title('Price Distribution for Each Chosen Yogurt Type')
+plt.xlabel('Yogurt Type')
+plt.ylabel('Price')
+plt.show()
+```
+
+#### Interpretation:
+- Yogurt 1 (y1): This yogurt shows a wide range of prices, with the majority concentrated around the higher end, as indicated by the dense cluster of outliers at the lower price range. The median price is just below $0.10 per oz. The box extends from around $0.05 to over $0.10, indicating a broad spread in prices for this choice.
+
+- Yogurt 2 (y2): The price distribution for Yogurt 2 is relatively compact compared to Yogurt 1, suggesting less variability in its pricing. The median price is close to $0.09 per oz. The box is narrow, centered around this median, with fewer outliers, which indicates more consistent pricing for this yogurt.
+
+- Yogurt 3 (y3): Yogurt 3 shows a median price roughly at $0.06 per oz. The box is moderately wide, showing some variation in price but less so than Yogurt 1. There are a few outliers on the higher side, but overall, the distribution suggests moderate price consistency.
+
+- Yogurt 4 (y4): Similar to Yogurt 3, the price distribution for Yogurt 4 is centered around $0.08 per oz, with a relatively narrow box indicating consistent pricing. This choice exhibits fewer outliers, suggesting that the prices for Yogurt 4 are quite stable.
+
+
+#### Future Simulation Plans: Given the insights from the current price distribution analysis of the different yogurt types, a logical next step is to simulate how changes in pricing could potentially affect consumer choices. This simulation would provide valuable insights into the price elasticity of each yogurt type and help optimize pricing strategies.
+
+#### Price Increase Simulation: Initially focus on simulating the effects of a moderate price increase, particularly for Yogurt 1, which exhibits the highest price variability. The aim would be to determine if a higher price could be sustained without significant loss of market share, given its apparent premium positioning.
+
+
+<br><br>
+
+
 Let the vector of product features include brand dummy variables for yogurts 1-3 (we'll omit a dummy for product 4 to avoid multi-collinearity), a dummy variable to indicate if a yogurt was featured, and a continuous variable for the yogurts' prices:  
 
 $$ x'_j = \left[ \mathbb{1}(\text{Yogurt 1}), \mathbb{1}(\text{Yogurt 2}), \mathbb{1}(\text{Yogurt 3}), X_f, X_p \right] $$
