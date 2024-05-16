@@ -261,7 +261,7 @@ This code will ensure the dataset is structured correctly for your MNL model ana
 
 #### I will now code the log-likelihood function, which is crucial for estimating the parameters of the model. This function will be used to quantify the fit of the model to the observed data, facilitating the optimization process.
 
-#### Next then,I will utilize the optim() function in R to determine the Maximum Likelihood Estimates (MLEs) for the five parameters ($\beta_1, \beta_2, \beta_3, \beta_f, \beta_p$). The expected results include two positive and one negative product intercepts, a small positive coefficient for the 'featured' variable, and a large negative coefficient for the 'price' variable.
+#### Next, I will utilize the optim() function in R to determine the Maximum Likelihood Estimates (MLEs) for the five parameters ($\beta_1, \beta_2, \beta_3, \beta_f, \beta_p$). The expected results should include meaningful coefficients for the product intercepts, the 'featured' variable, and the 'price' variable.
 
 
 
