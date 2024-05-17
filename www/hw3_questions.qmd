@@ -1,5 +1,4 @@
 ---
-title: "Poisson Regression Examples"
 author: "Sangho Lee"
 date: 5/13/2024
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
@@ -8,7 +7,7 @@ editor_options:
 ---
 
 
-This assignment uses uses the MNL model to analyze (1) yogurt purchase data made by consumers at a retail location, and (2) conjoint data about consumer preferences for minivans.
+This assignment uses uses the MNL model to analyze (1) yogurt purchase data made by consumers at a retail location.
 
 
 ## 1. Estimating Yogurt Preferences
@@ -128,17 +127,13 @@ print(yogurt_data.info())
 #### Bivariate Analysis: Price vs Choice
 
 ```{python}
-# Melt the data to have a long format for easier plotting
 melted_yogurt_data = pd.melt(yogurt_data, id_vars=['id'], value_vars=['y1', 'y2', 'y3', 'y4'], 
                              var_name='choice', value_name='chosen')
 
-# Filter only the chosen cases
 chosen_data = melted_yogurt_data[melted_yogurt_data['chosen'] == 1]
 
-# Merge the price columns with the chosen_data
 chosen_data = chosen_data.merge(yogurt_data[['id', 'p1', 'p2', 'p3', 'p4']], on='id')
 
-# Create a new column for the corresponding price
 def get_price(row):
     if row['choice'] == 'y1':
         return row['p1']
@@ -151,7 +146,6 @@ def get_price(row):
 
 chosen_data['price'] = chosen_data.apply(get_price, axis=1)
 
-# Boxplot for price vs choice
 plt.figure(figsize=(10, 6))
 sns.boxplot(x='choice', y='price', data=chosen_data)
 plt.title('Price Distribution for Each Chosen Yogurt Type')
@@ -226,23 +220,18 @@ price_long <- yogurt_data %>%
                       values_to = "price") %>%
   dplyr::mutate(product = as.numeric(sub("p", "", product)))
 
-# Join the reshaped dataframes by id and product
 yogurt_long <- choice_long %>%
   dplyr::left_join(featured_long, by = c("id", "product")) %>%
   dplyr::left_join(price_long, by = c("id", "product"))
 
-# Create dummy variables for brands
 yogurt_long <- yogurt_long %>%
   dplyr::mutate(is_brand1 = as.integer(product == 1),
                 is_brand2 = as.integer(product == 2),
                 is_brand3 = as.integer(product == 3))
 
-# Select and arrange the columns appropriately
 yogurt_long <- yogurt_long %>% 
   dplyr::select(id, product, choice, featured, price, is_brand1, is_brand2, is_brand3)
 
-
-# View the reorganized data
 yogurt_long %>% 
   head(10) %>%
   knitr::kable() 
@@ -272,8 +261,7 @@ log_likelihood_mnl <- function(beta, data) {
   exp_utility <- exp(utility)
   sum_exp_utility <- ave(exp_utility, data$id, FUN = sum)
   probabilities <- exp_utility / sum_exp_utility
-  
-  # Calculate log-likelihood
+
   log_likelihood <- sum(data$choice * log(probabilities + 1e-10)) 
   return(-log_likelihood)
 }
@@ -283,7 +271,6 @@ beta_initial <- rep(0.1, 5)
 # Optimization to find the best beta values (MLE)
 opt_result <- optim(par = beta_initial, fn = log_likelihood_mnl, data = yogurt_long, method = "BFGS", control = list(trace = 1, REPORT = 1))
 
-# Check the results
 print(opt_result$par)  
 print(opt_result$value)  
 
@@ -373,17 +360,12 @@ mnl_model <- multinom(choice ~ price + featured + is_brand1 + is_brand2 + is_bra
 
 summary(mnl_model)
 
-# Coefficients and Standard Errors
 coefficients <- summary(mnl_model)$coefficients
 standard_errors <- summary(mnl_model)$standard.errors
 
-# Calculate z-values
 z_values <- coefficients / standard_errors
 
-# Get two-tailed p-values from the z-values
 p_values <- 2 * (1 - pnorm(abs(z_values)))
-
-# Show the p-values
 p_values
 
 ```
@@ -410,28 +392,21 @@ Given the statistical significance of all coefficients and assuming that the res
 
 
 #### 2. Calculate Market Shares with Original Data:
-```{r}
-# Function to predict choice probabilities and ensure matrix output
+```{r, results='hide'}
 predict_probs <- function(model, data) {
-  # Get probabilities from the model prediction
   probs <- predict(model, data, type = "probs")
   
-  # Ensure probs is a matrix (necessary if the output isn't already in this format)
   if (is.vector(probs)) {
-    # Assuming there are 4 choice categories (adjust if different)
     probs <- matrix(probs, nrow = length(probs)/4, ncol = 4, byrow = TRUE)
   }
   
   return(probs)
 }
 
-# Calculate the predicted probabilities with original data
 predicted_probs_original <- predict_probs(mnl_model, yogurt_long)
 
-# Check structure again
 str(predicted_probs_original)
 
-# Calculate the original market shares by taking column means of the predicted probabilities
 if (is.matrix(predicted_probs_original)) {
   original_shares <- colMeans(predicted_probs_original)
   print("Original Market Shares:")
@@ -442,12 +417,38 @@ if (is.matrix(predicted_probs_original)) {
 
 ```
 
+```{r, include=FALSE}
+# Define the yogurt market shares
+yogurt_shares <- data.frame(
+  Yogurt = c("Yogurt 1", "Yogurt 2", "Yogurt 3", "Yogurt 4"),
+  MarketShare = c(34.20, 40.12, 2.92, 22.76)
+)
+
+# Ensure MarketShare is numeric
+yogurt_shares$MarketShare <- as.numeric(yogurt_shares$MarketShare)
+```
+
+
+```{r}
+custom_colors <- c("Yogurt 2" = "lightgray", "Yogurt 1" = "lightgreen", "Yogurt 4" = "lightgray", "Yogurt 3" = "lightgray")
+
+yogurt_shares %>% 
+  ggplot(aes(x = reorder(Yogurt, -MarketShare), y = MarketShare, fill = Yogurt)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = sprintf("%.2f%%", MarketShare)), vjust = -0.3, size = 5) +
+  scale_fill_manual(values = custom_colors, guide = "none") + 
+  labs(title = "Market Shares for Yogurt Products before Inreasing the Price by $0.1", x = "Yogurt", y = "Market Share (%)") +
+  theme_classic() +
+  theme(text = element_text(size = 15))
+```
+
 
 ##### Market Shares for Yogurt Products
-- Yogurt 1: 34.20%
 - Yogurt 2: 40.12%
-- Yogurt 3: 2.92%
+- Yogurt 1: 34.20%
 - Yogurt 4: 22.76%
+- Yogurt 3: 2.92%
+
 
 
 #### 3. Simulate a Price Increase for Yogurt 1:
@@ -462,23 +463,93 @@ predicted_probs_new <- predict_probs(mnl_model, yogurt_long_simulated)
 
 new_shares <- colMeans(predicted_probs_new)
 
-print(new_shares)
+```
 
+```{r, include = FALSE}
+yogurt_shares_2 <- data.frame(
+  Yogurt = c("Yogurt 1", "Yogurt 2", "Yogurt 3", "Yogurt 4"),
+  MarketShare = c(0.02856808, 0.40123032, 0.02920950, 0.22756241) * 100 
+)
+
+yogurt_shares_2$MarketShare <- as.numeric(yogurt_shares_2$MarketShare)
 
 ```
 
+
+```{r}
+custom_colors <- c("Yogurt 1" = "#FFCCCB", "Yogurt 2" = "lightgray", "Yogurt 3" = "lightgray", "Yogurt 4" = "lightgray")
+
+yogurt_shares_2 %>% 
+  ggplot(aes(x = reorder(Yogurt, -MarketShare), y = MarketShare, fill = Yogurt)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = sprintf("%.2f%%", MarketShare)), vjust = -0.3, size = 5) +
+  scale_fill_manual(values = custom_colors, guide = "none") + 
+  labs(title = "Market Shares for Yogurt Products after Increasing the Price by $0.1", x = "Yogurt", y = "Market Share (%)") +
+  theme_classic() +
+  theme(text = element_text(size = 15))
+```
+
 #### Results
-Original Market Shares:
-- Yogurt 1: 34.20%
+Original Market Shares: <br>
+
+- <span style="color:green">Yogurt 1: 34.20%</span>
 - Yogurt 2: 40.12%
 - Yogurt 3: 2.92%
 - Yogurt 4: 22.76%
 
-New Market Shares After Price Increase:
-- Yogurt 1: 2.86%
+New Market Shares After Price Increase: <br>
+
+- <span style="color:red">Yogurt 1: 2.86%</span>
 - Yogurt 2: 40.12%
 - Yogurt 3: 2.92%
 - Yogurt 4: 22.76%
+
+
+```{r, include = FALSE}
+library(gridExtra)
+library(grid)
+
+# Data for the first graph
+data1 <- data.frame(
+  Yogurt = c("Yogurt 2", "Yogurt 1", "Yogurt 4", "Yogurt 3"),
+  MarketShare = c(40.12, 34.20, 22.76, 2.92)
+)
+
+# Data for the second graph
+data2 <- data.frame(
+  Yogurt = c("Yogurt 2", "Yogurt 4", "Yogurt 3", "Yogurt 1"),
+  MarketShare = c(40.12, 22.76, 2.92, 2.86)
+)
+```
+
+```{r}
+# Create the first graph
+p1 <- ggplot(data1, aes(x = Yogurt, y = MarketShare, fill = Yogurt == "Yogurt 1")) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  geom_text(aes(label = paste0(MarketShare, "%")), vjust = -0.5) +
+  scale_fill_manual(values = c("gray", "lightgreen")) +
+  labs(title = "Market Shares Changes for Yogurt Products by Increating the price by $0.1", y = "Market Share (%)") +
+  theme_classic()
+
+# Create the second graph
+p2 <- ggplot(data2, aes(x = Yogurt, y = MarketShare, fill = Yogurt == "Yogurt 1")) +
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  geom_text(aes(label = paste0(MarketShare, "%")), vjust = -0.5) +
+  scale_fill_manual(values = c("gray", "#FFCCCB")) +
+  labs(y = "Market Share (%)") +
+  theme_classic()
+
+# Draw the arrow from left to right
+arrow <- grid::linesGrob(arrow = grid::arrow(type = "closed", length = unit(0.2, "inches")),
+                         gp = grid::gpar(col = "black"), x = unit(c(0.25, 0.75), "npc"), y = unit(c(0.5, 0.5), "npc"))
+
+# Arrange the graphs and the arrow
+gridExtra::grid.arrange(
+  p1, arrow, p2,
+  ncol = 3,
+  widths = c(3, 1, 3)
+)
+```
 
 #### Conclusion: The market share for Yogurt 1 decreased significantly from 34.20% to 2.86% after the price increase. This indicates a substantial sensitivity of consumer choice to the price of Yogurt 1.
 
